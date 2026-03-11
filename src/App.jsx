@@ -30,18 +30,24 @@ function getDigits(input) {
   return (input || '').replace(/\D/g, '')
 }
 
+function normaliseUK(digits) {
+  // Strip UK country code (44) or trunk prefix (0) to get core number
+  if (digits.startsWith('440')) return digits.slice(3)  // 440 → remove prefix
+  if (digits.startsWith('44')) return digits.slice(2)    // 44  → remove country code
+  if (digits.startsWith('0')) return digits.slice(1)     // 0   → remove trunk prefix
+  return digits
+}
+
 function phonesMatch(a, b) {
   const digitsA = getDigits(a)
   const digitsB = getDigits(b)
   if (digitsA.length === 0 || digitsB.length === 0) return false
 
-  // Use the shorter number's length for comparison
-  // This handles cases where stored number is "7841678043"
-  // and user types "07841678043" or "+447841678043"
-  const minLen = Math.min(digitsA.length, digitsB.length)
-  const tailA = digitsA.slice(-minLen)
-  const tailB = digitsB.slice(-minLen)
-  return tailA === tailB
+  // Normalise both numbers to strip UK country code / trunk prefix
+  // "447841678043" → "7841678043"
+  // "07841678043"  → "7841678043"
+  // "+44 7841 678043" → "7841678043"
+  return normaliseUK(digitsA) === normaliseUK(digitsB)
 }
 
 // ============================================================
